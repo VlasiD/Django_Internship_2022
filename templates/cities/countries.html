@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %} Countries {% endblock %}
+
+{% block content %}
+    <div class="main" style="padding-left: 20px; padding-top: 10px; width:520px">
+        <table id="countries_table" border="3" cellpadding="1" cellspacing="1" style="width:500px" class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Country</th>
+                <th>Link</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in countries %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ item }}</td>
+                    <td><a href="{% url 'country' pk=forloop.counter %}">Link</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#countries_table').DataTable();
+        })
+    </script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %} Cities {% endblock %}
+
+{% block content %}
+    <div class="main" style="padding-left: 20px; padding-top: 10px; width:520px">
+        <table id="cities_table" border="3" cellpadding="1" cellspacing="1" style="width:500px" class="table">
+            <thead>
+            <tr>
+                <th>City</th>
+                <th>Population</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for city, population in country.items %}
+                <tr>
+                    {% if population < 100 %}
+                        <th style="color: green">{{ city }}</th>
+                    {% elif population > 500 %}
+                        <th style="color: red">{{ city }}</th>
+                    {% else %}
+                        <th style="color: gold">{{ city }}</th>
+                    {% endif %}
+                    <td>{{ population }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#cities_table').DataTable();
+        })
+    </script>
+{% endblock %}
