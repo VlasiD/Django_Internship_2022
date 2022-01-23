@@ -21,7 +21,7 @@ class City(models.Model):
     name = models.CharField(max_length=100)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     population = models.IntegerField(default=0)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
     flag = models.ImageField()
     has_mcdonalds = models.BooleanField()
 
