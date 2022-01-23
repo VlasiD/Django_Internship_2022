@@ -3,21 +3,25 @@
 {% block title %} Countries {% endblock %}
 
 {% block content %}
-    <div class="main" style="padding-left: 20px; padding-top: 10px; width:520px">
-        <table id="countries_table" border="3" cellpadding="1" cellspacing="1" style="width:500px" class="table">
+    <div class="main" style="padding-left: 20px; padding-top: 10px; ">
+        <table id="countries_table" border="3" class="table">
             <thead>
             <tr>
                 <th>#</th>
                 <th>Country</th>
-                <th>Link</th>
+                <th>ISO</th>
+                <th>Population</th>
+                <th>Flag</th>
             </tr>
             </thead>
             <tbody>
-            {% for item in countries %}
+            {% for country in countries %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ item }}</td>
-                    <td><a href="{% url 'country' pk=forloop.counter %}">Link</a></td>
+                    <th><a href="{% url 'country' pk=country.id %}">{{ country.name }}</a></th>
+                    <td>{{ country.iso }}</td>
+                    <td>{{ country.population }}</td>
+                    <td><img src="/media/{{ country.flag }}" width="50px" height="30px"></td>
                 </tr>
             {% endfor %}
             </tbody>

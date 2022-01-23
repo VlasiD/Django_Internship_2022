@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cities.first.country }}{% endblock %}
+
+{% block content %}
+    <div class="main" style="padding-left: 20px; padding-top: 10px;">
+        <table id="cities_table" border="3" class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>City</th>
+                <th>Population</th>
+                <th>McDonald's</th>
+                <th>Flag</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for city in cities %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <th>{% if city.population < 300 %}
+                        <a style="color: green" href="{% url 'city' city.country.id city.id %}">
+                    {% elif city.population > 1000 %}
+                        <a style="color: red" href="{% url 'city' city.country.id city.id %}">
+                    {% else %}
+                        <a style="color: gold" href="{% url 'city' city.country.id city.id %}">
+                    {% endif %}
+                        {{ city.name }}</a>
+                    </th>
+                    <td>{{ city.population }}</td>
+                    <td>{% if city.has_mcdonalds %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                    </td>
+                    <td><img src="/media/{{ city.flag }}" width="50px" height="30"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#cities_table').DataTable();
+        })
+    </script>
+{% endblock %}
