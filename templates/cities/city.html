@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
+{% load extras %}
 
 {% block title %}{{ city.name }}{% endblock %}
 
 {% block content %}
-    <div class="row" style="width: 1000px; margin: 0 auto; padding-top: 10px; background-color: ghostwhite">
-        <div class="col">
-            <p><i>{{ city.name }} is the city of {{ city.country.name }}.</i></p>
-            <p><i>The population of {{ city.name }} is {{ city.population }} thouthands people.</i></p>
-            <p><i>
-                {% if city.has_mcdonalds %}
-                    There is a McDonald's in the city.
-                {% else %}
-                    Unfortunately, there isn't a McDonald's in the city.
-                {% endif %}
-            </i></p>
-        </div>
-        <div class="col"><img style="padding-bottom: 10px" width="500" height="350px" src="/media/{{ city.flag }}">
+    <div class="container">
+        <h3 class="container" style="text-align: center; padding-top: 10px; ">The city {{ city.name }}</h3>
+        <div class="row">
+            <div class="col">
+                <p><i>{{ city.name }} is the city of {{ city.country.name|upper }}.</i></p>
+                <p><i>The population of {{ city.name }} is {{ city.population }} thouthands people.</i></p>
+                <p><i>
+                    {% if city.has_mcdonalds %}
+                        There is a McDonald's in the city.
+                        <img src="{{ city.has_mcdonalds|image_tag }}" width="30px" height="30px">
+                    {% else %}
+                        Unfortunately, there isn't a McDonald's in the city.
+                        <img src="{{ city.has_mcdonalds|image_tag }}" width="30px" height="30px">
+                    {% endif %}
+                </i></p>
+            </div>
+            <div class="col"><img style="padding-bottom: 10px" width="500" height="350px" src="/media/{{ city.flag }}">
+            </div>
         </div>
     </div>
 {% endblock %}

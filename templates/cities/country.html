@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
+{% load extras %}
+{% load static %}
 
-{% block title %}{{ cities.first.country }}{% endblock %}
+{% block title %}{{ country.name|upper }}{% endblock %}
 
 {% block content %}
-    <div class="main" style="padding-left: 20px; padding-top: 10px;">
+    <div class="container" style="padding-left: 20px; padding-top: 10px;">
+    <h3 class="container" style="text-align: center; padding-top: 10px; ">Country {{ country.name|upper }}</h3>
         <table id="cities_table" border="3" class="table">
+            <div style="padding-bottom: 15px">
+                <a class="btn btn-primary" style="color: white" href="{% url 'create_city' country.id %}">Add city</a>
+            </div>
             <thead>
             <tr>
                 <th>#</th>
@@ -12,6 +18,7 @@
                 <th>Population</th>
                 <th>McDonald's</th>
                 <th>Flag</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -28,13 +35,10 @@
                         {{ city.name }}</a>
                     </th>
                     <td>{{ city.population }}</td>
-                    <td>{% if city.has_mcdonalds %}
-                        Yes
-                    {% else %}
-                        No
-                    {% endif %}
-                    </td>
+                    <td><img src="{{ city.has_mcdonalds|image_tag }}" width="30px" height="30px"></td>
                     <td><img src="/media/{{ city.flag }}" width="50px" height="30"></td>
+                    <td><a href="{% url 'edit_city' city.country.id city.id %}"><img alt="edit" src="{% static 'cities/img/config.png' %}"
+                                                                              width="30px" height="30px"></a></td>
                 </tr>
             {% endfor %}
             </tbody>

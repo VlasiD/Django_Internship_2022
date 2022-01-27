@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %} New city {% endblock %}
+
+{% block content %}
+    <div class="container" style="padding-left: 20px; padding-top: 10px">
+        <h3 class="container" style="text-align: center; padding-top: 10px; padding-bottom: 10px">New city</h3>
+        <form method="POST" class="post-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="width: 500px">
+                {% bootstrap_form form layout='horizontal' %}
+            </div>
+            {% buttons submit='Save' %}{% endbuttons %}
+        </form>
+    </div>
+{% endblock %}

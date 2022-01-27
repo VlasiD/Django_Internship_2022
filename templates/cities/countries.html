@@ -1,27 +1,35 @@
 {% extends 'base.html' %}
+{%  load static %}
 
 {% block title %} Countries {% endblock %}
 
 {% block content %}
-    <div class="main" style="padding-left: 20px; padding-top: 10px; ">
+    <div class="container" style="padding-left: 20px; padding-top: 10px; ">
+        <h3 class="container" style="text-align: center; padding-top: 10px; ">Countries</h3>
         <table id="countries_table" border="3" class="table">
             <thead>
+            <div style="padding-bottom: 15px">
+                <a class="btn btn-primary" style="color: white" href="{% url 'create_country' %}">Create country</a>
+            </div>
             <tr>
                 <th>#</th>
                 <th>Country</th>
                 <th>ISO</th>
                 <th>Population</th>
                 <th>Flag</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
             {% for country in countries %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <th><a href="{% url 'country' pk=country.id %}">{{ country.name }}</a></th>
+                    <th><a href="{% url 'country' pk=country.id %}">{{ country.name|upper }}</a></th>
                     <td>{{ country.iso }}</td>
                     <td>{{ country.population }}</td>
                     <td><img src="/media/{{ country.flag }}" width="50px" height="30px"></td>
+                    <td><a href="{% url 'edit_country' pk=country.id %}"><img alt="edit" src="{% static 'cities/img/config.png' %}"
+                                                                              width="30px" height="30px"></a></td>
                 </tr>
             {% endfor %}
             </tbody>
