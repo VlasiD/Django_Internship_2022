@@ -1,31 +1,49 @@
 {% extends 'base.html' %}
 {% load extras %}
 {% load static %}
+{% load bootstrap4 %}
 
 {% block title %}{{ country.name|upper }}{% endblock %}
 
 {% block content %}
-    <div class="container" style="padding-left: 20px; padding-top: 10px;">
+    <div class="container">
     <h3 class="container" style="text-align: center; padding-top: 10px; ">Country {{ country.name|upper }}</h3>
-        <table id="cities_table" border="3" class="table">
-            <div style="padding-bottom: 15px">
-                <a class="btn btn-primary" style="color: white" href="{% url 'create_city' country.id %}">Add city</a>
+    <div class="filter">
+        <div class="checkbox" id="checkbox">
+            <label><input type="checkbox" rel="McDonalds" onchange="change()"/>Has McDonald's</label>
+        </div>
+        <div class="row">
+            <div class="col">
+                {% if user.is_authenticated %}
+                    <a class="btn btn-primary" style="color: white" href="{% url 'create_city' country.id %}">Add
+                        city</a>
+                {% endif %}
             </div>
+            <div class="d-flex justify-content-between">
+                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" style="width: 250px">
+                    {% bootstrap_form form show_label=False %}
+                </form>
+            </div>
+        </div>
+        <table id="cities_table" border="3" class="table">
             <thead>
             <tr>
-                <th>#</th>
-                <th>City</th>
-                <th>Population</th>
-                <th>McDonald's</th>
-                <th>Flag</th>
-                <th></th>
+                <th style="text-align: center">#</th>
+                <th style="text-align: center">City</th>
+                <th style="text-align: center">Population</th>
+                <th style="text-align: center">McDonald's</th>
+                <th style="text-align: center">Flag</th>
+                {% if user.is_authenticated %}
+                    <th style="text-align: center"><img alt="edit" src="{% static 'cities/img/config.svg' %}"
+                                                        width="30px" height="30px"></th>
+                {% endif %}
             </tr>
             </thead>
             <tbody>
-            {% for city in cities %}
+            {% for city in page %}
                 <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <th>{% if city.population < 300 %}
+                    <th style="text-align: center" scope="row">{{ forloop.counter }}</th>
+                    <th style="text-align: center">{% if city.population < 300 %}
                         <a style="color: green" href="{% url 'city' city.country.id city.id %}">
                     {% elif city.population > 1000 %}
                         <a style="color: red" href="{% url 'city' city.country.id city.id %}">
@@ -34,22 +52,55 @@
                     {% endif %}
                         {{ city.name }}</a>
                     </th>
-                    <td>{{ city.population }}</td>
-                    <td><img src="{{ city.has_mcdonalds|image_tag }}" width="30px" height="30px"></td>
-                    <td><img src="/media/{{ city.flag }}" width="50px" height="30"></td>
-                    <td><a href="{% url 'edit_city' city.country.id city.id %}"><img alt="edit" src="{% static 'cities/img/config.png' %}"
-                                                                              width="30px" height="30px"></a></td>
+                    <td style="text-align: center">{{ city.population }}</td>
+                    <td style="text-align: center"><img src="{{ city.has_mcdonalds|image_tag }}" width="30px"
+                                                        height="30px"></td>
+                    <td style="text-align: center"><img src="/media/{{ city.flag }}" width="50px" height="30"></td>
+                    {% if user.is_authenticated %}
+                        <td style="text-align: center">
+                        <a href="{% url 'edit_city' city.country.id city.id %}">
+                            <img alt="edit"
+                                 src="{% static 'cities/img/edit.svg' %}"
+                                 width="40px" height="30px"></a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'delete_city' city.country.id city.id %}">
+                                <img alt="delete"
+                                     src="{% static 'cities/img/delete.svg' %}"
+                                     width="40px"
+                                     height="30px"></a>
+                        {% endif %}
+                    {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+    </div>
+    <div class="container" style="text-align: right">
+        <span class="step-links">
+        {% if page.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page.previous_page_number }}">previous</a>
+        {% endif %}
+
+            <span class="current">
+            Page {{ page.number }} of {{ page.paginator.num_pages }}.
+            </span>
+
+            {% if page.has_next %}
+                <a href="?page={{ page.next_page_number }}">next</a>
+                <a href="?page={{ page.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
     </div>
 {% endblock %}
 
 {% block js %}
     <script>
         $(document).ready(function () {
-            $('#cities_table').DataTable();
+            $('#cities_table').DataTable({
+                searching: false
+            });
         })
     </script>
 {% endblock %}

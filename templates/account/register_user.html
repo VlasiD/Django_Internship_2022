@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+            <div style="width: 500px">
+                {% bootstrap_form form layout='horizontal' %}
+            </div>
+            <input type="hidden" name="next" value="{% url 'countries' %}">
+            {% buttons submit='Register' %}{% endbuttons %}
+        </form>
+    </div>
+{% endblock %}
