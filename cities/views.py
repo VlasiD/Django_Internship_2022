@@ -15,7 +15,7 @@ def home(request):
 
 
 def countries(request):
-    countries = Country.objects.all()
+    countries = Country.objects.get_queryset().order_by('-population')
     if 'keyword' in request.GET:
         keyword = request.GET['keyword']
         countries = countries.filter(name__icontains=keyword)
@@ -33,7 +33,7 @@ def countries(request):
 
 def country(request, pk):
     country = get_object_or_404(Country, id=pk)
-    cities = City.objects.filter(country_id=pk)
+    cities = City.objects.filter(country_id=pk).order_by('-population')
     if 'keyword' in request.GET:
         keyword = request.GET['keyword']
         cities = cities.filter(name__icontains=keyword)

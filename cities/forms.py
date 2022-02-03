@@ -5,7 +5,7 @@ from cities.models import Country, City
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
-        fields = '__all__'
+        exclude = ['population']
 
 
 class CityForm(forms.ModelForm):

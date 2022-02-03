@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'cities.apps.MainConfig',
+    'cities.apps.CitiesConfig',
     'bootstrap4',
     'crispy_forms',
 ]
@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cities.middleware.CountryPopulationMiddleware',
 ]
 
 ROOT_URLCONF = 'Django_Internship_2022.urls'
