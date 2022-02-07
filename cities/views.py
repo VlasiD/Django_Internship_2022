@@ -6,8 +6,10 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 
+from cities.utilities import send_activation_notification
 from cities.models import Country, City
-from cities.forms import CountryForm, CityForm, SearchForm
+from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
+from cities.tasks import send_activation_notification
 
 
 def home(request):
@@ -134,10 +136,11 @@ class CitiesLogoutView(LoginRequiredMixin, LogoutView):
 
 
 def register(request):
-    form = UserCreationForm()
+    form = CustomUserCreationForm()
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_user = form.save()
+            send_activation_notification.delay(new_user.email)
             return redirect('countries')
     return render(request, 'account/register_user.html', context={'form': form})
