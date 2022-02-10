@@ -1,15 +1,12 @@
 import smtplib
-from time import sleep
-from django.core.mail import send_mail
-
 from Django_Internship_2022.celery import celery_app
-from celery import shared_task
-
+from django.core.mail import send_mail
 from Django_Internship_2022.config import email, password
 
 
-@shared_task()
+@celery_app.task
 def send_activation_notification(user_email):
+    print('1111111')
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.set_debuglevel(1)
     server.ehlo()
@@ -22,3 +19,9 @@ def send_activation_notification(user_email):
         [user_email],
         fail_silently=False
     )
+    print('222222222')
+
+
+@celery_app.task
+def test(arg):
+    print(arg)

@@ -5,11 +5,9 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-
-from cities.utilities import send_activation_notification
 from cities.models import Country, City
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification
+from cities.tasks import send_activation_notification, test
 
 
 def home(request):
@@ -49,6 +47,7 @@ def country(request, pk):
         page_num = 1
     page = paginator.get_page(page_num)
     context = {'cities': cities, 'country': country, 'page': page, 'form': form}
+    test.delay(5555555555555555555555555555)
     return render(request, 'cities/country.html', context=context)
 
 
