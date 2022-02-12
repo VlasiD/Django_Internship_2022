@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from cities.models import Country, City
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification, test
+from cities.tasks import send_activation_notification
 
 
 def home(request):
@@ -47,7 +48,6 @@ def country(request, pk):
         page_num = 1
     page = paginator.get_page(page_num)
     context = {'cities': cities, 'country': country, 'page': page, 'form': form}
-    test.delay(5555555555555555555555555555)
     return render(request, 'cities/country.html', context=context)
 
 
@@ -139,7 +139,11 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
-            send_activation_notification.delay(new_user.email)
+            form.save()
+            new_user = authenticate(username=form.cleaned_data['username'],
+                                    password=form.cleaned_data['password1'],
+                                    )
+            login(request, new_user)
+            send_activation_notification.delay(new_user.email, new_user.username)
             return redirect('countries')
     return render(request, 'account/register_user.html', context={'form': form})
