@@ -5,6 +5,9 @@
 
 {% block content %}
     <div class="container">
+        {% if user.is_authenticated %}
+            <p>You are already logged in</p>
+        {% else %}
         <form method="post">
             {% csrf_token %}
             <div style="width: 500px">
@@ -13,5 +16,6 @@
             <input type="hidden" name="next" value="{% url 'countries' %}">
             {% buttons submit='Register' %}{% endbuttons %}
         </form>
+        {% endif %}
     </div>
 {% endblock %}
