@@ -1,5 +1,5 @@
 from django.contrib import admin
-from cities.models import Country, City
+from cities.models import Country, City, Weather
 
 
 class CountryAdmin(admin.ModelAdmin):
@@ -13,5 +13,11 @@ class CityAdmin(admin.ModelAdmin):
     list_filter = ['country', 'has_mcdonalds']
 
 
+class WeatherAdmin(admin.ModelAdmin):
+    list_display = ('city', 'description', 'temperature', 'created_at')
+    search_fields = ['city']
+
+
 admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
+admin.site.register(Weather, WeatherAdmin)

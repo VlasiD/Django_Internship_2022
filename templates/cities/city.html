@@ -23,5 +23,18 @@
             <div class="col"><img style="padding-bottom: 10px" width="500" height="350px" src="/media/{{ city.flag }}">
             </div>
         </div>
+        <h4><b>WEATHER ({{ weather.created_at }})</b></h4>
+        <div class="row">
+
+            <div class="col-md-3"><h5><i>{{ weather.description }}</i></h5><img style="padding-bottom: 10px" width="200" height="200"
+                                  src="{{ weather.icon }}"></div>
+            <div class="col">
+                <h2>{{ weather.temperature }} &deg;C</h2>
+                <p>Feels like: {{ weather.feels_like }} &deg;C</p>
+                <p>Pressure: {{ weather.pressure }}hPa</p>
+                <p>Humidity: {{ weather.humidity }}%</p>
+                <p>Wind speed: {{ weather.wind_speed }} meter/sec</p>
+            </div>
+        </div>
     </div>
 {% endblock %}

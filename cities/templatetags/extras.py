@@ -8,3 +8,8 @@ def image_tag(param):
         return "/media/done.svg"
     else:
         return "/media/unavailable.svg"
+
+
+@register.filter()
+def get_item(dictionary, key):
+    return dictionary.get(key)

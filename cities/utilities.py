@@ -1,20 +1,33 @@
-import smtplib
-
-from django.core.mail import send_mail
-
-from Django_Internship_2022.config import email, password
+import requests
+import time
+from Django_Internship_2022.config import open_weather_key
 
 
-def send_activation_notification(user_email):
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.set_debuglevel(1)
-    server.ehlo()
-    server.starttls()
-    server.login(email, password)
-    send_mail(
-        'Thank you for registration',
-        'Hello, Thank you for joining us.',
-        email,
-        [user_email],
-        fail_silently=False
-    )
+def duration(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        return_value = func(*args, **kwargs)
+        print('Execution time: ', round(time.time() - start, 3))
+        return return_value
+
+    return wrapper
+
+
+def get_weather(city_name, country_code):
+    api_link = f'https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={open_weather_key}'
+    response = requests.get(api_link, params={'units': 'metric'})
+    json_response = response.json()
+    if json_response['cod'] == 200:
+        icon = json_response['weather'][0]['icon']
+        weather = {
+            'description': json_response['weather'][0]['description'],
+            'icon': f"https://openweathermap.org/img/wn/{icon}@2x.png",
+            'temperature': json_response['main']['temp'],
+            'feels_like': json_response['main']['feels_like'],
+            'pressure': json_response['main']['pressure'],
+            'humidity': json_response['main']['humidity'],
+            'wind_speed': json_response['wind']['speed']
+        }
+        return weather
+    else:
+        return dict()

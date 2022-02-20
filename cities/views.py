@@ -1,136 +1,182 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from cities.models import Country, City
+from django.utils.decorators import method_decorator
+from django.views import generic
+
+from cities.models import Country, City, Weather
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification
+from cities.tasks import send_activation_notification, delete_old_entries, add_weather
+from cities.utilities import duration, get_weather
 
 
-def home(request):
-    return redirect(request, 'countries')
+class CountriesListView(generic.ListView):
+    template_name = 'cities/countries.html'
+    model = Country
+    paginate_by = 15
+
+    def get_context_data(self, **kwargs):
+        context = super(CountriesListView, self).get_context_data()
+        if 'keyword' in self.request.GET:
+            keyword = self.request.GET['keyword']
+        else:
+            keyword = ''
+        context['form'] = SearchForm(initial={'keyword': keyword})
+        return context
+
+    def get_queryset(self):
+        countries = super(CountriesListView, self).get_queryset().order_by('-population')
+        if 'keyword' in self.request.GET:
+            keyword = self.request.GET['keyword']
+            return countries.filter(name__icontains=keyword)
+        return countries
+
+    @method_decorator(decorator=duration, name='dispatch')
+    def dispatch(self, request, *args, **kwargs):
+        return super(CountriesListView, self).dispatch(request, *args, **kwargs)
 
 
-def countries(request):
-    countries = Country.objects.get_queryset().order_by('-population')
-    if 'keyword' in request.GET:
-        keyword = request.GET['keyword']
-        countries = countries.filter(name__icontains=keyword)
-    else:
-        keyword = ''
-    form = SearchForm(initial={'keyword': keyword})
-    paginator = Paginator(countries, 15)
-    if 'page' in request.GET:
-        page_num = request.GET['page']
-    else:
-        page_num = 1
-    page = paginator.get_page(page_num)
-    return render(request, 'cities/countries.html', context={'countries': countries, 'page': page, 'form': form})
+class CountryView(generic.ListView):
+    template_name = 'cities/country.html'
+    model = City
+    paginate_by = 15
+
+    def get_context_data(self, **kwargs):
+        context = super(CountryView, self).get_context_data()
+        context['country'] = get_object_or_404(Country, id=self.kwargs['pk'])
+        if 'keyword' in self.request.GET:
+            keyword = self.request.GET['keyword']
+        else:
+            keyword = ''
+        context['form'] = SearchForm(initial={'keyword': keyword})
+        return context
+
+    def get_queryset(self):
+        cities = super(CountryView, self).get_queryset().filter(country_id=self.kwargs['pk']).order_by('-population')
+        if 'keyword' in self.request.GET:
+            keyword = self.request.GET['keyword']
+            return cities.filter(name__icontains=keyword)
+        return cities
+
+    @method_decorator(decorator=duration, name='dispatch')
+    def dispatch(self, request, *args, **kwargs):
+        return super(CountryView, self).dispatch(request, *args, **kwargs)
 
 
-def country(request, pk):
-    country = get_object_or_404(Country, id=pk)
-    cities = City.objects.filter(country_id=pk).order_by('-population')
-    if 'keyword' in request.GET:
-        keyword = request.GET['keyword']
-        cities = cities.filter(name__icontains=keyword)
-    else:
-        keyword = ''
-    form = SearchForm(initial={'keyword': keyword})
-    paginator = Paginator(cities, 15)
-    if 'page' in request.GET:
-        page_num = request.GET['page']
-    else:
-        page_num = 1
-    page = paginator.get_page(page_num)
-    context = {'cities': cities, 'country': country, 'page': page, 'form': form}
-    return render(request, 'cities/country.html', context=context)
+class CityView(generic.ListView):
+    template_name = 'cities/city.html'
+    model = City
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        city = get_object_or_404(City, id=self.kwargs['id'])
+        context['city'] = city
+        context['weather'] = Weather.objects.filter(city=city).order_by('-created_at')[0]
+        return context
 
 
-def city(request, pk, id):
-    city = get_object_or_404(City, id=id)
-    return render(request, 'cities/city.html', context={'city': city})
+@method_decorator(login_required, name='dispatch')
+class CountryCreateView(generic.CreateView):
+    template_name = 'cities/create_country.html'
+    model = Country
+    form_class = CountryForm
+    success_url = reverse_lazy('countries')
 
 
-@login_required(login_url='/login/')
-def create_country(request):
-    if request.method == 'POST':
-        form = CountryForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('countries')
-    else:
-        form = CountryForm()
-        return render(request, 'cities/create_country.html', context={'form': form})
+@method_decorator(login_required, name='dispatch')
+class CityCreateView(generic.CreateView):
+    template_name = 'cities/create_city.html'
+    model = City
+    form_class = CityForm
+
+    def form_valid(self, form):
+        form.instance.country = Country.objects.get(id=self.kwargs['pk'])
+        return super(CityCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('country', kwargs={'pk': self.kwargs['pk']})
 
 
-@login_required(login_url='/login/')
-def create_city(request, pk):
-    if request.method == 'POST':
-        form = CityForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_city = form.save(commit=False)
-            new_city.country = get_object_or_404(Country, id=pk)
-            new_city.save()
-            return redirect('country', pk=pk)
-    else:
-        form = CityForm()
-        return render(request, 'cities/create_city.html', context={'form': form})
+@method_decorator(login_required, name='dispatch')
+class CountryUpdateView(generic.UpdateView):
+    template_name = 'cities/edit_country.html'
+    model = Country
+    form_class = CountryForm
+    success_url = reverse_lazy('countries')
 
 
-@login_required(login_url='/login/')
-def edit_country(request, pk):
-    country = get_object_or_404(Country, id=pk)
-    if request.method == 'POST':
-        form = CountryForm(request.POST, request.FILES, instance=country)
-        if form.is_valid():
-            form.save()
-            return redirect('countries')
-    else:
-        form = CountryForm(instance=country)
-        return render(request, 'cities/edit_country.html', context={'form': form, 'country': country})
+@method_decorator(login_required, name='dispatch')
+class CityUpdateView(generic.UpdateView):
+    template_name = 'cities/edit_city.html'
+    model = City
+    form_class = CityForm
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(City, id=self.kwargs['id'])
+
+    def get_success_url(self):
+        return reverse_lazy('country', kwargs={'pk': self.kwargs['pk']})
 
 
-@login_required(login_url='/login/')
-def edit_city(request, pk, id):
-    city = get_object_or_404(City, id=id)
-    if request.method == 'POST':
-        form = CityForm(data=request.POST, instance=city)
-        if form.is_valid():
-            form.save()
-            return redirect('country', city.country.id)
-    else:
-        form = CityForm(instance=city)
-        return render(request, 'cities/edit_city.html', context={'form': form, 'city': city})
+@method_decorator(login_required, name='dispatch')
+class CountryDeleteView(generic.DeleteView, AccessMixin):
+    template_name = 'cities/delete.html'
+    model = Country
+    success_url = reverse_lazy('countries')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'country'
+        country = get_object_or_404(Country, id=self.kwargs['pk'])
+        context['object_name'] = country.name
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return self.handle_no_permission()
+        else:
+            return super(CountryDeleteView, self).dispatch(request)
 
 
-@login_required(login_url='/login/')
-def delete_country(request, pk):
-    country = get_object_or_404(Country, id=pk)
-    if request.user.is_staff:
-        country.delete()
-    return redirect('countries')
+@method_decorator(login_required, name='dispatch')
+class CityDeleteView(generic.DeleteView, AccessMixin):
+    template_name = 'cities/delete.html'
+    model = City
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(City, id=self.kwargs['id'])
+
+    def get_success_url(self):
+        messages.success(self.request, "Your preset has been deleted")
+        return reverse_lazy('country', kwargs={'pk': self.kwargs['pk']})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'city'
+        city = get_object_or_404(City, id=self.kwargs['id'])
+        context['object_name'] = city.name
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return self.handle_no_permission()
+        else:
+            return super(CityDeleteView, self).dispatch(request)
 
 
-@login_required(login_url='/login/')
-def delete_city(request, pk, id):
-    city = get_object_or_404(City, id=id)
-    country_id = city.country.id
-    if request.user.is_staff:
-        city.delete()
-    return redirect('country', country_id)
-
-
-class CitiesLoginView(LoginView):
+class CustomLoginView(LoginView):
     template_name = 'account/login.html'
     success_url = reverse_lazy('countries')
 
 
-class CitiesLogoutView(LoginRequiredMixin, LogoutView):
+class CustomLogoutView(LoginRequiredMixin, LogoutView):
     template_name = 'account/logout.html'
 
 

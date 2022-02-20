@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'cities.apps.CitiesConfig',
     'bootstrap4',
     'crispy_forms',
+    'django_celery_beat',
+    #'djcelery',
 ]
 
 MIDDLEWARE = [
@@ -132,6 +134,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# used for login_required decorator as redirect url
+LOGIN_URL = "/login/"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -147,6 +152,8 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ALWAYS_EAGER = True
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

@@ -40,7 +40,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for city in page %}
+            {% for city in page_obj %}
                 <tr>
                     <th style="text-align: center" scope="row">{{ forloop.counter }}</th>
                     <th style="text-align: center">{% if city.population < 300 %}
@@ -78,18 +78,18 @@
     </div>
     <div class="container" style="text-align: right">
         <span class="step-links">
-        {% if page.has_previous %}
+        {% if page_obj.has_previous %}
             <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page.previous_page_number }}">previous</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
         {% endif %}
 
             <span class="current">
-            Page {{ page.number }} of {{ page.paginator.num_pages }}.
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
             </span>
 
-            {% if page.has_next %}
-                <a href="?page={{ page.next_page_number }}">next</a>
-                <a href="?page={{ page.paginator.num_pages }}">last &raquo;</a>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
         </span>
     </div>

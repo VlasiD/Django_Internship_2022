@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -28,3 +30,15 @@ class City(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Weather(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    created_at = models.DateTimeField()
+    description = models.CharField(max_length=100)
+    icon = models.ImageField()
+    temperature = models.CharField(max_length=100)
+    feels_like = models.CharField(max_length=100)
+    pressure = models.CharField(max_length=100)
+    humidity = models.CharField(max_length=100)
+    wind_speed = models.CharField(max_length=100)
