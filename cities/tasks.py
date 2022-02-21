@@ -1,7 +1,7 @@
 import smtplib
 from django.template.loader import render_to_string
 from Django_Internship_2022.celery import celery_app
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from Django_Internship_2022.config import email, password
 from cities.models import City, Weather
 from cities.utilities import get_weather

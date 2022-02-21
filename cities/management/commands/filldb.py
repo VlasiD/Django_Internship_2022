@@ -46,13 +46,3 @@ class Command(BaseCommand):
                     country=get_object_or_404(Country, name=country[0])
                 )
                 new_city.save()
-
-        # new_city = City.objects.create(
-        #     name='Chizhou',
-        #     population=23251,
-        #     slug='Chizhou',
-        #     flag='Chizhou',
-        #     has_mcdonalds=True,
-        #     country=get_object_or_404(Country, name='USA')
-        # )
-        # new_city.save()

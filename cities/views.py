@@ -1,21 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.core.paginator import Paginator
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
-
 from cities.models import Country, City, Weather
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification, delete_old_entries, add_weather
-from cities.utilities import duration, get_weather
-
+from cities.tasks import send_activation_notification
+from cities.utilities import duration
 
 class CountriesListView(generic.ListView):
     template_name = 'cities/countries.html'
