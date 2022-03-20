@@ -42,7 +42,11 @@ INSTALLED_APPS = [
     'bootstrap4',
     'crispy_forms',
     'django_celery_beat',
-    #'djcelery',
+    'flower',
+    'rest_framework',
+    'django_filters',
+    'cities_api',
+    'oauth2_provider',
 ]
 
 MIDDLEWARE = [
@@ -152,7 +156,7 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ALWAYS_EAGER = True
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+#CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -161,3 +165,16 @@ EMAIL_PORT = '587'
 EMAIL_HOST_USER = email
 EMAIL_HOST_PASSWORD = password
 EMAIL_USE_TLS = True
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+
+        ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ]
+}

@@ -8,7 +8,7 @@ from cities.utilities import get_weather
 from datetime import datetime, timedelta
 
 
-@celery_app.task
+@celery_app.task()
 def send_activation_notification(user_email, username):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.set_debuglevel(1)
@@ -23,7 +23,7 @@ def send_activation_notification(user_email, username):
     msg.send()
 
 
-@celery_app.task()
+@celery_app.task
 def add_weather():
     cities = City.objects.all()
     for city in cities:
@@ -41,7 +41,7 @@ def add_weather():
         )
 
 
-@celery_app.task()
+@celery_app.task
 def delete_old_entries():
     all_entries = Weather.objects.get_queryset().order_by('-created_at')
     old_entries = all_entries.filter(created_at__lte=datetime.now() - timedelta(days=7))
@@ -49,4 +49,6 @@ def delete_old_entries():
         entry.delete()
 
 
-
+@celery_app.task
+def test():
+    print('----------------------')

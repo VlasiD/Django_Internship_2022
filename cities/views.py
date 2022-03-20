@@ -9,8 +9,9 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from cities.models import Country, City, Weather
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification
+from cities.tasks import send_activation_notification, test
 from cities.utilities import duration
+
 
 class CountriesListView(generic.ListView):
     template_name = 'cities/countries.html'

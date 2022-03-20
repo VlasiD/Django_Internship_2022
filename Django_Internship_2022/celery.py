@@ -18,4 +18,8 @@ CELERY_BEAT_SCHEDULER = {
         'task': 'cities.tasks.delete_old_entries',
         'schedule': crontab(hour=7, minute=0),
     },
+    'tesssst': {
+        'task': 'cities.tasks.test',
+        'schedule': crontab(minute='*/1'),
+    },
 }
