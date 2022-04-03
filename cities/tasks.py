@@ -42,13 +42,8 @@ def add_weather():
 
 
 @celery_app.task
-def delete_old_entries():
+def delete_old_weather():
     all_entries = Weather.objects.get_queryset().order_by('-created_at')
     old_entries = all_entries.filter(created_at__lte=datetime.now() - timedelta(days=7))
     for entry in old_entries:
         entry.delete()
-
-
-@celery_app.task
-def test():
-    print('----------------------')

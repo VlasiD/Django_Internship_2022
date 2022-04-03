@@ -2,14 +2,20 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
+from rest_framework import generics, viewsets, views, status, mixins
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.response import Response
+
 from cities.models import Country, City, Weather
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
-from cities.tasks import send_activation_notification, test
+from cities.serializers import CountrySerializer, CitySerializer, UserSerializer
+from cities.tasks import send_activation_notification
 from cities.utilities import duration
 
 
@@ -74,7 +80,10 @@ class CityView(generic.ListView):
         context = super().get_context_data(**kwargs)
         city = get_object_or_404(City, id=self.kwargs['id'])
         context['city'] = city
-        context['weather'] = Weather.objects.filter(city=city).order_by('-created_at')[0]
+        if Weather.objects.filter(city=city):
+            context['weather'] = Weather.objects.filter(city=city).order_by('-created_at')[0]
+        else:
+            context['weather'] = None
         return context
 
 
@@ -189,3 +198,87 @@ def register(request):
             send_activation_notification.delay(new_user.email, new_user.username)
             return redirect('countries')
     return render(request, 'account/register_user.html', context={'form': form})
+
+
+####################################################################################
+# API views
+
+class CountriesListViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        """Filters via population range"""
+        queryset = Country.objects.all()
+        from_ = self.request.query_params.get('from')
+        to = self.request.query_params.get('to')
+        if from_ and to:
+            queryset = queryset.filter(population__range=[from_, to])
+        return queryset
+
+
+class CountryCreateViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+
+class CountryUpdateViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+
+class CountryDeleteViewSet(viewsets.GenericViewSet, mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+
+class CityListApiView(generics.ListAPIView):
+    serializer_class = CitySerializer
+
+    def get_queryset(self):
+        """Filters via country id or Mcdonalds availability"""
+        queryset = City.objects.all()
+        country_id = self.request.query_params.get('id')
+        has_mcdonalds = self.request.query_params.get('has_mcdonalds')
+        if country_id:
+            queryset = queryset.filter(country_id=country_id)
+        if has_mcdonalds is not None:
+            queryset = queryset.filter(has_mcdonalds=has_mcdonalds)
+        return queryset
+
+
+class CityApiView(generics.RetrieveAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+
+class CityCreateApiView(generics.CreateAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+    def perform_create(self, serializer):
+        country = get_object_or_404(Country, id=self.kwargs.get('pk'))
+        serializer.save(country=country)
+
+
+class CityUpdateApiView(generics.UpdateAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+
+class CityDeleteApiView(generics.DestroyAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+
+class CreateUserApiView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def post(self, request):
+        user = request.data
+        serializer = UserSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

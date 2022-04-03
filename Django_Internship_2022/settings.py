@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'flower',
     'rest_framework',
     'django_filters',
-    'cities_api',
     'oauth2_provider',
 ]
 

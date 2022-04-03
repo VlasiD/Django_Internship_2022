@@ -9,7 +9,6 @@ def duration(func):
         return_value = func(*args, **kwargs)
         print('Execution time: ', round(time.time() - start, 3))
         return return_value
-
     return wrapper
 
 
