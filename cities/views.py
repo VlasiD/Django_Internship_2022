@@ -12,6 +12,8 @@ from rest_framework import generics, viewsets, views, status, mixins
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 
+from cities import Services
+from cities.Services.model_service import ModelService
 from cities.models import Country, City, Weather
 from cities.forms import CountryForm, CityForm, SearchForm, CustomUserCreationForm
 from cities.serializers import CountrySerializer, CitySerializer, UserSerializer
@@ -220,16 +222,19 @@ class CountriesListViewSet(viewsets.ReadOnlyModelViewSet):
 class CountryCreateViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class CountryUpdateViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class CountryDeleteViewSet(viewsets.GenericViewSet, mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class CityListApiView(generics.ListAPIView):
@@ -255,6 +260,7 @@ class CityApiView(generics.RetrieveAPIView):
 class CityCreateApiView(generics.CreateAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
+    permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
         country = get_object_or_404(Country, id=self.kwargs.get('pk'))
@@ -264,21 +270,23 @@ class CityCreateApiView(generics.CreateAPIView):
 class CityUpdateApiView(generics.UpdateAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class CityDeleteApiView(generics.DestroyAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class CreateUserApiView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    permission_classes = (AllowAny,)
 
     def post(self, request):
-        user = request.data
-        serializer = UserSerializer(data=user)
+        model_service = ModelService()
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        model_service.create_object(serializer=serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
