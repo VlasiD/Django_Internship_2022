@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'flower',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'oauth2_provider',
 ]
@@ -124,7 +125,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -175,5 +176,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.TokenAuthentication',
     ]
 }
