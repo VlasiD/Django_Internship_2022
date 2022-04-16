@@ -1,5 +1,6 @@
 {% load static %}
 {% load bootstrap4 %}
+{% load socialaccount %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -38,10 +39,13 @@
             </ul>
             <div class="col-md-10" align="right">
                 {% if user.is_authenticated %}
+                    <p>Welcome, {{ user.username }} !</p>
                     <button type="button" class="btn btn-outline-light me-2"><a href="{% url 'logout' %}">Log
                         Out</a>
                     </button>
                 {% else %}
+                    <button type="button" class="btn btn-outline-light me-2"><a
+                            href="{% provider_login_url 'google' %}">Login with Google</a></button>
                     <button type="button" class="btn btn-outline-light me-2"><a href="{% url 'login' %}">Log In</a>
                     </button>
                     <button type="button" class="btn btn-warning"><a href="{% url 'register' %}">Sign-up</a>

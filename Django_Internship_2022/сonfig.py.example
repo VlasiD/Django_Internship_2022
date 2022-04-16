@@ -1,0 +1,10 @@
+DB_USER = ''
+DB_PASSWORD = ''
+
+email = ''
+password = ''
+
+open_weather_key = ''
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
