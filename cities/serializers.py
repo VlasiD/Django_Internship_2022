@@ -12,8 +12,7 @@ class CountrySerializer(serializers.ModelSerializer):
 class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = City
-        fields = ['name', 'population', 'slug', 'flag', 'has_mcdonalds']
-        # fields = '__all__'
+        exclude = ['country']
 
 
 class UserSerializer(serializers.ModelSerializer):

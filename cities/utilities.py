@@ -1,6 +1,8 @@
 import requests
 import time
 from Django_Internship_2022.config import open_weather_key
+import tempfile
+from PIL import Image
 
 
 def duration(func):
@@ -30,3 +32,14 @@ def get_weather(city_name, country_code):
         return weather
     else:
         return dict()
+
+
+def temporary_image():
+    """
+    Returns a new temporary image file
+    """
+    image = Image.new('RGB', (100, 100))
+    tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+    image.save(tmp_file, 'jpeg')
+    tmp_file.seek(0)  # important because after save(), the fp is already at the end of the file
+    return tmp_file

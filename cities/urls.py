@@ -8,7 +8,7 @@ from Django_Internship_2022 import settings
 
 api_urlpatterns = [
     path('city/', CityListApiView.as_view(), name='api_city_list'),
-    path('city/<int:pk>', CityApiView.as_view(), name='api_city_list'),
+    path('city/<int:pk>/', CityApiView.as_view(), name='api_city_list'),
     path('country/<int:pk>/city/create/', CityCreateApiView.as_view(), name='api_city_create'),
     path('city/<int:pk>/update/', CityUpdateApiView.as_view(), name='api_city_update'),
     path('city/<int:pk>/delete/', CityDeleteApiView.as_view(), name='api_city_delete'),
